@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright 2017 The Tsinghua University
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>tsinghua.stargate</groupId>
+        <artifactId>stargate-parent</artifactId>
+        <version>0.1.0</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>stargate-core</artifactId>
+    <version>0.1.0</version>
+    <packaging>jar</packaging>
+    <name>StarGate Core</name>
+    <description>StarGate Project Core Module</description>
+    <url>http://stargate.apache.org/</url>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.thrift</groupId>
+            <artifactId>libthrift</artifactId>
+            <version>${thrift.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.alluxio</groupId>
+            <artifactId>alluxio-core-client</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${rpc.target}</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-sources</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <echo>
+                                    Create (or clear) output directory for generated files.
+                                </echo>
+                                <mkdir dir="${rpc.target}"/>
+                                <delete>
+                                    <fileSet dir="${rpc.target}"
+                                      includes="**/*"/>
+                                </delete>
+                                <echo>
+                                    Generate Java source files from
+                                    ${thrift.src}
+                                </echo>
+                                <exec executable="${thrift.bin}">
+                                    <arg value="--gen"/>
+                                    <arg value="java"/>
+                                    <arg value="-out"/>
+                                    <arg value="${rpc.target}"/>
+                                    <arg value="${thrift.src}/entity.thrift"/>
+                                </exec>
+                                <exec executable="${thrift.bin}">
+                                    <arg value="-r"/>
+                                    <arg value="--gen"/>
+                                    <arg value="java"/>
+                                    <arg value="-out"/>
+                                    <arg value="${rpc.target}"/>
+                                    <arg value="${thrift.src}/message.thrift"/>
+                                </exec>
+                                <exec executable="${thrift.bin}">
+                                    <arg value="--gen"/>
+                                    <arg value="java"/>
+                                    <arg value="-out"/>
+                                    <arg value="${rpc.target}"/>
+                                    <arg value="${thrift.src}/application_stargate_protocol.thrift"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-test-classpath</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>build-classpath</goal>
+                        </goals>
+                        <configuration>
+                            <includeScope>test</includeScope>
+                            <outputProperty>test_classpath</outputProperty>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeScope>runtime</includeScope>
+                            <outputDirectory>${project.basedir}/../lib_managed/jar/dependency</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <outputDirectory>${project.basedir}/../lib_managed/jar</outputDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>prepare-test-jar</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>log4j.properties</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>windows</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                </os>
+            </activation>
+            <properties>
+                <thrift.bin>D:/Program Files/thrift/thrift.exe</thrift.bin>
+            </properties>
+        </profile>
+        <profile>
+            <id>mac</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <properties>
+                <thrift.bin>/usr/local/bin/thrift</thrift.bin>
+            </properties>
+        </profile>
+        <profile>
+            <id>riffa</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>generate-sources</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo>
+                                            Create (or clear) output directory for generated files.
+                                        </echo>
+                                        <mkdir dir="${rpc.target}"/>
+                                        <delete>
+                                            <fileSet dir="${rpc.target}"
+                                                     includes="**/*"/>
+                                        </delete>
+                                        <echo>
+                                            Generate Java source files from
+                                            ${thrift.src}
+                                        </echo>
+                                        <exec executable="${thrift.bin}">
+                                            <arg value="--gen"/>
+                                            <arg value="java"/>
+                                            <arg value="-out"/>
+                                            <arg value="${rpc.target}"/>
+                                            <arg value="${thrift.src}/entity.thrift"/>
+                                        </exec>
+                                        <exec executable="${thrift.bin}">
+                                            <arg value="-r"/>
+                                            <arg value="--gen"/>
+                                            <arg value="java"/>
+                                            <arg value="-out"/>
+                                            <arg value="${rpc.target}"/>
+                                            <arg value="${thrift.src}/message.thrift"/>
+                                        </exec>
+                                        <exec executable="${thrift.bin}">
+                                            <arg value="--gen"/>
+                                            <arg value="java"/>
+                                            <arg value="-out"/>
+                                            <arg value="${rpc.target}"/>
+                                            <arg value="${thrift.src}/application_stargate_protocol.thrift"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>make_riffa</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo>
+                                            Create java wrappers for Riffa.
+                                        </echo>
+                                        <echo message="make..."/>
+                                        <mkdir dir="${project.basedir}/../lib_managed/native"/>
+                                        <exec executable="make" failonerror="true">
+                                            <arg line="-C ./src/main/native/tsinghua/stargate/io"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>clean_riffa</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo>
+                                            Clean java wrappers for Riffa.
+                                        </echo>
+                                        <echo message="make clean..."/>
+                                        <exec executable="make" failonerror="true">
+                                            <arg line="clean -C ./src/main/native/tsinghua/stargate/io"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>generate-sources</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo>
+                                            Create (or clear) output directory for generated files.
+                                        </echo>
+                                        <mkdir dir="${rpc.target}"/>
+                                        <delete>
+                                            <fileSet dir="${rpc.target}"
+                                                     includes="**/*"/>
+                                        </delete>
+                                        <echo>
+                                            Generate Java source files from
+                                            ${thrift.src}
+                                        </echo>
+                                        <exec executable="${thrift.bin}">
+                                            <arg value="--gen"/>
+                                            <arg value="java"/>
+                                            <arg value="-out"/>
+                                            <arg value="${rpc.target}"/>
+                                            <arg value="${thrift.src}/entity.thrift"/>
+                                        </exec>
+                                        <exec executable="${thrift.bin}">
+                                            <arg value="-r"/>
+                                            <arg value="--gen"/>
+                                            <arg value="java"/>
+                                            <arg value="-out"/>
+                                            <arg value="${rpc.target}"/>
+                                            <arg value="${thrift.src}/message.thrift"/>
+                                        </exec>
+                                        <exec executable="${thrift.bin}">
+                                            <arg value="--gen"/>
+                                            <arg value="java"/>
+                                            <arg value="-out"/>
+                                            <arg value="${rpc.target}"/>
+                                            <arg value="${thrift.src}/application_stargate_protocol.thrift"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>build_native</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <echo message="Build native..."/>
+                                        <exec executable="make" failonerror="true">
+                                            <arg line="all -C src/main/native"/>
+                                        </exec>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>remove_native</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <echo message="Remove native..."/>
+                                        <exec executable="make" failonerror="true">
+                                            <arg line="remove -C src/main/native"/>
+                                        </exec>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>hardware</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>generate-sources</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <echo>
+                                            Create (or clear) output directory for generated files.
+                                        </echo>
+                                        <mkdir dir="${rpc.target}"/>
+                                        <delete>
+                                            <fileSet dir="${rpc.target}"
+                                                     includes="**/*"/>
+                                        </delete>
+                                        <echo>
+                                            Generate Java source files from
+                                            ${thrift.src}
+                                        </echo>
+                                        <exec executable="${thrift.bin}">
+                                            <arg value="--gen"/>
+                                            <arg value="java"/>
+                                            <arg value="-out"/>
+                                            <arg value="${rpc.target}"/>
+                                            <arg value="${thrift.src}/entity.thrift"/>
+                                        </exec>
+                                        <exec executable="${thrift.bin}">
+                                            <arg value="-r"/>
+                                            <arg value="--gen"/>
+                                            <arg value="java"/>
+                                            <arg value="-out"/>
+                                            <arg value="${rpc.target}"/>
+                                            <arg value="${thrift.src}/message.thrift"/>
+                                        </exec>
+                                        <exec executable="${thrift.bin}">
+                                            <arg value="--gen"/>
+                                            <arg value="java"/>
+                                            <arg value="-out"/>
+                                            <arg value="${rpc.target}"/>
+                                            <arg value="${thrift.src}/application_stargate_protocol.thrift"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>build_hardware</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <echo message="Build native and hardware..."/>
+                                        <exec executable="make" failonerror="true">
+                                            <arg line="TARGETS=hw all -C src/main/native"/>
+                                        </exec>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>remove_hardware</id>
+                                <phase>clean</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <tasks>
+                                        <echo message="Remove native and hardware..."/>
+                                        <exec executable="make" failonerror="true">
+                                            <arg line="remove -C src/main/native"/>
+                                        </exec>
+                                    </tasks>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

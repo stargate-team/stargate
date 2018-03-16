@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+#
+# Copyright 2017 The Tsinghua University
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+
+JAVA=$JAVA_HOME/bin/java
+JAVA_HEAP_MAX=-Xmx1000m
+# check env vars which might override default args
+if [ "$STARGATE_HEAPSIZE" != "" ]; then
+  JAVA_HEAP_MAX="-Xmx""$STARGATE_HEAPSIZE""m"
+fi
+
+
+JAVA_THREAD_HEAP_MAX=-Xss2m
+# check env vars which might override default args
+if [ "$STARGATE_THREAD_HEAPSIZE" != "" ]; then
+  JAVA_THREAD_HEAP_MAX="-Xmx""$STARGATE_THREAD_HEAPSIZE""m"
+fi
+
+
+# Find the java binary
+if [ -n "${JAVA_HOME}" ]; then
+  RUNNER="${JAVA_HOME}/bin/java"
+else
+  if [ `command -v java` ]; then
+    RUNNER="java"
+  else
+    echo "JAVA_HOME is not set" >&2
+    exit 1
+  fi
+fi
+
+export DEPS_JAR_PATH=$STARGATE_HOME/lib_managed/jar/dependency/*
+export STARGATE_JAR_PATH=$STARGATE_HOME/lib_managed/jar/*
+export STARGATE_ASSEMBLY_JAR_PATH=$STARGATE_HOME/lib_managed/jar/assembly/*
+
+export OPENCL_LIB_PATH=$STARGATE_HOME/core/src/main/native/out
+export RIFFA_LIB_PATH=$STARGATE_HOME/lib_managed/native
+export NATIVE_LIB_PATH=$OPENCL_LIB_PATH:$RIFFA_LIB_PATH
+
+export LAUNCH_CLASSPATH=$DEPS_JAR_PATH:$STARGATE_JAR_PATH:$STARGATE_ASSEMBLY_JAR_PATH:$STARGATE_CONF_DIR
+
+STARGATE_OPTS="$STARGATE_OPTS -Djava.library.path=$NATIVE_LIB_PATH"
+MAIN_CLASS='tsinghua.stargate.StarGateDaemon'
+exec "$JAVA"  $JAVA_HEAP_MAX $JAVA_THREAD_HEAP_MAX $STARGATE_OPTS -classpath "$LAUNCH_CLASSPATH" $MAIN_CLASS
