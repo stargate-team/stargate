@@ -22,7 +22,7 @@ StarGate is mainly built by using Apache Maven. Building StarGate requires Maven
     
 ### build/build
 
-StarGate now comes packaged with a self-contained Maven installation to ease building and deployment of Spark from source located under the build/ directory. This script will automatically download and setup all necessary build requirements (Maven, Scala, Zinc and Thrift) locally within the build/ directory itself. It honors any mvn binary if present already, however, will pull down its own copy of Scala and Zinc regardless to ensure proper version requirements are met. build/build execution acts as a pass through to the mvn call allowing easy transition from previous build methods. As an example, one can build a version of StarGate as follows:
+StarGate now comes packaged with a self-contained Maven installation to ease building and deployment of StarGate from source located under the build/ directory. This script will automatically download and setup all necessary build requirements (Maven, Scala, Zinc and Thrift) locally within the build/ directory itself. It honors any mvn binary if present already, however, will pull down its own copy of Scala and Zinc regardless to ensure proper version requirements are met. build/build execution acts as a pass through to the mvn call allowing easy transition from previous build methods. As an example, one can build a version of StarGate as follows:
 
     ./build/build -DskipTests clean package
 
