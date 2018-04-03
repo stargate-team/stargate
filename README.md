@@ -7,7 +7,7 @@ StarGate is a programming and runtime framework for enabing easy and efficient d
 ## Prerequisites
 
 > * FPGA: Xilinx-VC709 (using Riffa Driver + Verilog) or Xilinx-KCU1500 (using OpenCL)
-> * OS: Ubuntu14.04 [kernel: 4.4.0-81-generic, target for Xilinx-VC709] or Ubuntu16.04 (kernel: 4.10.0-42-generic (4.13 is not available), target for Xilinx-VC709 or Xilinx-KCU1500) 
+> * OS: Ubuntu14.04 (kernel: 4.4.0-81-generic, target for Xilinx-VC709) or Ubuntu16.04 (kernel: 4.10.0-42-generic (4.13 is not available), target for Xilinx-VC709 or Xilinx-KCU1500) 
 > * Vivado: 2017.2 (64-bit)
 > * JDK: >= 1.8
 > * Scala: 2.10
@@ -40,7 +40,7 @@ StarGate now comes packaged with a self-contained Maven installation to ease bui
 
 ## Running StarGate Application
 
-StarGate application can be a regular java application or a Spark application (see our examples). If you want to run your own StarGate application (Java and Spark-local type) on a node paired with FPGA accerator cards (e.g., Xilinx-VC709 or Xilinx-KCU1500), you should start a StarGate Server JVM on that node and then start StarGate Client to submit your application. On the other hand, if you want to run StarGate application in a cluster (e.g., Spark on YARN mode), you should configure Hadoop YARN capacity-scheduler.xml to support label scheduling, start StarGate servers on those nodes paired with FPGA accerator cards and then start StarGate Client which uses spark-submit to submit your StarGate application. The examples' issue commands are listed as follows:
+A StarGate application can be a regular java application or a Spark application (see our examples). If you want to run your own StarGate application (Java and Spark-local type) on a node paired with FPGA accerators (e.g., Xilinx-VC709 or Xilinx-KCU1500), you should start a StarGate server JVM on that node and then start StarGate client to submit your application. On the other hand, if you want to run StarGate application in a cluster (e.g., Spark on YARN mode), you should configure Hadoop YARN capacity-scheduler.xml to support label scheduling, start StarGate servers on those nodes paired with FPGA accerators and then start StarGate client which uses typical spark-submit to submit your StarGate application. Some examples' start commands are listed as follows:
 
 ### Starting StarGate Server
 
@@ -59,3 +59,11 @@ StarGate application can be a regular java application or a Spark application (s
     ./bin/stargate kmeans
     ./bin/stargate spark-local-kmeans
     ./bin/stargate spark-yarn-kmeans
+
+# Contacts
+
+For any question or discussion, please contact the authors:
+
+* Allen Zhou: pangchingchow@gmail.com
+* Heyang Zhou: zhouheyang1@126.com
+* Junbao Hu: 521yiyi1414@gmail.com
