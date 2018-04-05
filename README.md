@@ -28,15 +28,15 @@ StarGate now comes packaged with a self-contained Maven installation to ease bui
 
 ### Building with Riffa (PCIe driver) support
 
-    ./build/build -Priffa
+    ./build/build -Priffa -DskipTests clean package
 
 ### Building with Xilinx FPGA (software bitstream) support
 
-    ./build/build -Pnative
+    ./build/build -Pnative -DskipTests clean package
 
 ### Building with Xilinx FPGA (hardware bitstream) support
 
-    ./build/build -Phardware
+    ./build/build -Phardware -DskipTests clean package
 
 ## Running StarGate Application
 
